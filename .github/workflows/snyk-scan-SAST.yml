@@ -1,4 +1,5 @@
 name: Snyk Code SAST Scan
+run-name: pipline analisis SAST
 
 on:
   push:
