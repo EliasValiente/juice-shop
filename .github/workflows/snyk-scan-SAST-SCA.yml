@@ -1,0 +1,37 @@
+name: Snyk Security Analysis
+run-name: Pipeline análisis SAST & SCA
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}  # Configurar el token globalmente
+
+jobs:
+  sast:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Ejecutar análisis estático con Snyk Code (SAST)
+        run: snyk code test --severity-threshold=high || true # ( || true ) --> Bypass del codigo de salida para la continuacion del pipeline
+
+  sca:
+    runs-on: self-hosted  # Usa tu GitHub runner local
+    needs: sast  # Espera a que termine el SAST antes de ejecutar SCA
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Instalar dependencias (para SCA)
+        run: npm install  # Instalar dependencias 
+
+      - name: Ejecutar análisis de dependencias con Snyk (SCA)
+        run: snyk test --severity-threshold=high || true
